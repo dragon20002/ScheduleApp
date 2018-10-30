@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">WinterCodingCalendar</string>
+    <string name="app_name">Winter Coding 달력 앱</string>
+    <string name="title_activity_calendar">CalendarActivity</string>
+    <string name="tab_monthly">Monthly</string>
+    <string name="tab_weekly">Weekly</string>
+    <string name="tab_daily">Daily</string>
 </resources>
