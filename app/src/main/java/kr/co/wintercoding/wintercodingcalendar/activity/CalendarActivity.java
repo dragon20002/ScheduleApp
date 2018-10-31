@@ -14,9 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import kr.co.wintercoding.wintercodingcalendar.R;
-import kr.co.wintercoding.wintercodingcalendar.view.DailyCalendarView;
-import kr.co.wintercoding.wintercodingcalendar.view.MonthlyCalendarView;
-import kr.co.wintercoding.wintercodingcalendar.view.WeeklyCalendarView;
 
 public class CalendarActivity extends AppCompatActivity {
     private static final String PREF_SETTINGS = "settings";
@@ -80,13 +77,13 @@ public class CalendarActivity extends AppCompatActivity {
             switch (sectionNumber) {
                 case 0: //월
                 default:
-                    rootView = new MonthlyCalendarView(getContext());
+                    rootView = inflater.inflate(R.layout.fragment_calendar_monthly, container, false);
                     break;
                 case 1: //주
-                    rootView = new WeeklyCalendarView(container.getContext());
+                    rootView = inflater.inflate(R.layout.fragment_calendar_weekly, container, false);
                     break;
                 case 2: //일
-                    rootView = new DailyCalendarView(container.getContext());
+                    rootView = inflater.inflate(R.layout.fragment_calendar_daily, container, false);
                     break;
             }
             return rootView;

@@ -8,8 +8,10 @@
     tools:context=".activity.IntroActivity">
 
     <ImageView
+        android:id="@+id/intro_image_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
         android:contentDescription="@string/app_name"
         android:src="@drawable/intro"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -17,5 +19,14 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/developer"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@id/intro_image_view"
+        app:layout_constraintStart_toStartOf="@id/intro_image_view" />
 
 </android.support.constraint.ConstraintLayout>
