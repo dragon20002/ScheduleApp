@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import kr.co.wintercoding.wintercodingcalendar.R;
+import kr.co.wintercoding.wintercodingcalendar.view.CalendarView;
+import kr.co.wintercoding.wintercodingcalendar.view.CustomGesture;
 
 public class CalendarActivity extends AppCompatActivity {
     private static final String PREF_SETTINGS = "settings";
@@ -73,19 +75,45 @@ public class CalendarActivity extends AppCompatActivity {
         public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             // 각 탭에 대한 뷰 생성
             View rootView;
+            final CalendarView view;
+
             int sectionNumber = (getArguments() != null) ? getArguments().getInt(ARG_SECTION_NUMBER) : 0;
             switch (sectionNumber) {
                 case 0: //월
                 default:
                     rootView = inflater.inflate(R.layout.fragment_calendar_monthly, container, false);
+                    view = rootView.findViewById(R.id.monthly_calendar_view);
                     break;
                 case 1: //주
                     rootView = inflater.inflate(R.layout.fragment_calendar_weekly, container, false);
+                    view = rootView.findViewById(R.id.weekly_calendar_view);
                     break;
                 case 2: //일
                     rootView = inflater.inflate(R.layout.fragment_calendar_daily, container, false);
+                    view = rootView.findViewById(R.id.daily_calendar_view);
                     break;
             }
+
+            // 각 탭에 대한 뷰에 제스쳐 등록
+            view.setOnSwipeGestureListener(new CustomGesture(new CustomGesture.OnSwipeGestureListener() {
+                @Override
+                public void swipeUp() {
+                    view.moveNext();
+                    view.invalidate();
+                }
+
+                @Override
+                public void swipeDown() {
+                    view.movePrevious();
+                    view.invalidate();
+                }
+
+                @Override
+                public void tap(float x, float y) {
+                    if (view.select(x, y))
+                        view.invalidate();
+                }
+            }));
             return rootView;
         }
     }

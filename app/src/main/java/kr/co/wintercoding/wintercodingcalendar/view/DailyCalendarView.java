@@ -6,8 +6,10 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 public class DailyCalendarView extends CalendarView {
+    protected int date;
 
     public DailyCalendarView(Context context) {
         super(context);
@@ -23,19 +25,48 @@ public class DailyCalendarView extends CalendarView {
 
     @Override
     public void movePrevious() {
+        if (selected.get(Calendar.DATE) == 1) {
+            selected.roll(Calendar.MONTH, false);
+            if (selected.get(Calendar.MONTH) == 11)
+                selected.roll(Calendar.YEAR, false);
+        }
         selected.roll(Calendar.DATE, false);
     }
 
     @Override
     public void moveNext() {
         selected.roll(Calendar.DATE, true);
+        if (selected.get(Calendar.DATE) == 1) {
+            selected.roll(Calendar.MONTH, true);
+            if (selected.get(Calendar.MONTH) == 0)
+                selected.roll(Calendar.YEAR, true);
+        }
+    }
+
+    @Override
+    public boolean select(float x, float y) {
+        return false;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        int width = getWidth();
-        int center = width / 2;
-        canvas.drawText("1", center, center, largeTextPaint);
-        canvas.drawCircle(center, center, center, accentColorPaint);
+        super.onDraw(canvas);
+
+        if (width == 0) {
+            width = getWidth();
+            center = width / 2;
+            hinterval = width / 7;
+            vinterval = width / 7;
+        }
+        date = 0;
+
+        // month
+        int year = selected.get(Calendar.YEAR);
+        int month = selected.get(Calendar.MONTH); //0-11
+        int date = selected.get(Calendar.DATE);
+        int day = selected.get(Calendar.DAY_OF_WEEK);
+        canvas.drawText(String.format(Locale.KOREA, "%d 년 %02d 월", year, month + 1), center, 1.5f * vinterval, largeTextPaint);
+
+        drawDate(canvas, year, month, date, day - 1, center, 3 * vinterval);
     }
 }
