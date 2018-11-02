@@ -21,6 +21,7 @@ import kr.co.wintercoding.wintercodingcalendar.listener.CustomGesture;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 
 public abstract class CalendarView extends View {
+    protected final Paint smallTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     protected final Paint normalTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     protected final Paint boldTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     protected final Paint redTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -30,6 +31,7 @@ public abstract class CalendarView extends View {
     protected final Paint primaryColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     protected final Paint primaryDarkColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     protected final Paint accentColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    protected final Paint notifyColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     protected int width = 0;
     protected float center = 0;
@@ -39,6 +41,7 @@ public abstract class CalendarView extends View {
     protected final String DAYS[] = {"일", "월", "화", "수", "목", "금", "토"};
     protected Calendar today, selected;
     protected List<Schedule> schedules;
+    protected int[] numOfSchedules = new int[31];
 
     protected GestureDetectorCompat gestureDetectorCompat = null;
 
@@ -57,30 +60,33 @@ public abstract class CalendarView extends View {
         init();
     }
 
-    private void initTextPaint(Paint paint, float size, int colorId, Typeface typeface) {
+    protected void initTextPaint(Paint paint, float size, int color, Typeface typeface) {
         paint.setTextSize(size);
         paint.setTextAlign(Paint.Align.CENTER);
-        if (colorId != -1)
-            paint.setColor(colorId);
+        if (color != -1)
+            paint.setColor(color);
         if (typeface != null)
             paint.setTypeface(typeface);
     }
 
-    private void initColorPaint(Paint paint, int colorId) {
+    protected void initColorPaint(Paint paint, int color) {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(dipToPx(3f));
-        paint.setColor(getResources().getColor(colorId));
+        paint.setColor(color);
     }
 
     private void init() {
+        initTextPaint(smallTextPaint, dipToPx(10f), Color.argb(255, 250, 250, 250), null);
         initTextPaint(normalTextPaint, dipToPx(20f), -1, null);
         initTextPaint(boldTextPaint, dipToPx(22f), -1, Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         initTextPaint(redTextPaint, dipToPx(20f), Color.RED, null);
         initTextPaint(blueTextPaint, dipToPx(20f), Color.BLUE, null);
         initTextPaint(largeTextPaint, dipToPx(30f), -1, null);
-        initColorPaint(primaryColorPaint, R.color.colorPrimary);
-        initColorPaint(primaryDarkColorPaint, R.color.colorPrimaryDark);
-        initColorPaint(accentColorPaint, R.color.colorAccent);
+        initColorPaint(primaryColorPaint, getResources().getColor(R.color.colorPrimary));
+        initColorPaint(primaryDarkColorPaint, getResources().getColor(R.color.colorPrimaryDark));
+        initColorPaint(accentColorPaint, getResources().getColor(R.color.colorAccent));
+        notifyColorPaint.setStyle(Paint.Style.FILL);
+        notifyColorPaint.setColor(getResources().getColor(R.color.colorAccent));
 
         today = Calendar.getInstance();
         selected = Calendar.getInstance();
@@ -111,17 +117,6 @@ public abstract class CalendarView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int minw = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth();
-        int w = resolveSizeAndState(minw, widthMeasureSpec, 1);
-
-//        int minh = MeasureSpec.getSize(w) + getPaddingBottom() + getPaddingTop();
-        int h = resolveSizeAndState(MeasureSpec.getSize(w), heightMeasureSpec, 0);
-
-        setMeasuredDimension(w, h);
     }
 
     /* UTILS */
@@ -173,20 +168,21 @@ public abstract class CalendarView extends View {
     }
 
     /* GETTER */
-    public Calendar getToday() {
-        return today;
-    }
-
     public Calendar getSelected() {
         return selected;
     }
 
-    public void addSchedule(Schedule schedule) {
-        schedules.add(schedule);
-    }
+    public abstract void addSchedule(Schedule schedule);
 
     public void updateSchedules(List<Schedule> schedules) {
         this.schedules = schedules;
+
+        for (int i = 0; i < 31; i++)
+            numOfSchedules[i] = 0;
+
+        for (Schedule schedule : schedules) {
+            numOfSchedules[schedule.getDate() - 1]++;
+        }
     }
 
     public void setOnSwipeGestureListener(CustomGesture listener) {

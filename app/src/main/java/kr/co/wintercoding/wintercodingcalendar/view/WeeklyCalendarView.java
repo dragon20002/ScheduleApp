@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 import java.util.Calendar;
 import java.util.Locale;
 
+import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
+
 public class WeeklyCalendarView extends CalendarView {
     private int[] dates = new int[7];
 
@@ -124,4 +126,13 @@ public class WeeklyCalendarView extends CalendarView {
             drawDate(canvas, year, month, dates[i], i, center + (i - 3) * hinterval, 4 * vinterval);
     }
 
+    public void addSchedule(Schedule schedule) {
+        int selYear = selected.get(Calendar.YEAR);
+        int selMonth = selected.get(Calendar.MONTH);
+        int selWeek = selected.get(Calendar.WEEK_OF_MONTH);
+        if (selYear == schedule.getYear() && selMonth == schedule.getMonth() && selWeek == schedule.getWeek()) {
+            numOfSchedules[schedule.getDate() - 1]++;
+            schedules.add(schedule);
+        }
+    }
 }

@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 import java.util.Calendar;
 import java.util.Locale;
 
+import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
+
 public class DailyCalendarView extends CalendarView {
     protected int date;
 
@@ -68,5 +70,15 @@ public class DailyCalendarView extends CalendarView {
         canvas.drawText(String.format(Locale.KOREA, "%d 년 %02d 월", year, month + 1), center, 1.5f * vinterval, largeTextPaint);
 
         drawDate(canvas, year, month, date, day - 1, center, 3 * vinterval);
+    }
+
+    public void addSchedule(Schedule schedule) {
+        int selYear = selected.get(Calendar.YEAR);
+        int selMonth = selected.get(Calendar.MONTH);
+        int selDate = selected.get(Calendar.DATE);
+        if (selYear == schedule.getYear() && selMonth == schedule.getMonth() && selDate == schedule.getDate()) {
+            numOfSchedules[selDate - 1]++;
+            schedules.add(schedule);
+        }
     }
 }

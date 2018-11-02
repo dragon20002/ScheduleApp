@@ -2,12 +2,15 @@ package kr.co.wintercoding.wintercodingcalendar.model;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 
 @Entity
 public class Schedule {
     @PrimaryKey
     private long id;
+    @ColumnInfo
+    private String content;
     @ColumnInfo
     private int year; //2XXX
     @ColumnInfo
@@ -16,15 +19,19 @@ public class Schedule {
     private int week; //1-6
     @ColumnInfo
     private int date; //1-31
-    @ColumnInfo
-    private String content;
 
-    public Schedule(long id, int year, int month, int date, String content) {
-        this.id = id;
+    @Ignore
+    public Schedule(String content, int year, int month, int week, int date) {
+        this.content = content;
         this.year = year;
         this.month = month;
+        this.week = week;
         this.date = date;
-        this.content = content;
+    }
+
+    public Schedule(long id, String content, int year, int month, int week, int date) {
+        this(content, year, month, week, date);
+        this.id = id;
     }
 
     public long getId() {
