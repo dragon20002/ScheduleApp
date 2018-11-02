@@ -1,21 +1,18 @@
 package kr.co.wintercoding.wintercodingcalendar.activity;
 
+import android.arch.persistence.room.Room;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import kr.co.wintercoding.wintercodingcalendar.R;
-import kr.co.wintercoding.wintercodingcalendar.view.CalendarView;
-import kr.co.wintercoding.wintercodingcalendar.view.CustomGesture;
+import kr.co.wintercoding.wintercodingcalendar.dao.AppDatabase;
+import kr.co.wintercoding.wintercodingcalendar.dao.ScheduleDao;
 
 public class CalendarActivity extends AppCompatActivity {
     private static final String PREF_SETTINGS = "settings";
@@ -23,10 +20,16 @@ public class CalendarActivity extends AppCompatActivity {
 
     private ViewPager mViewPager;
 
+    public static ScheduleDao scheduleDao;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
+
+        scheduleDao = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "schedule")
+                .build()
+                .scheduleDao();
 
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -56,68 +59,6 @@ public class CalendarActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    public static class PlaceholderFragment extends Fragment {
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        public PlaceholderFragment() {
-        }
-
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            // 새로운 프래그먼트 생성 및 페이지번호(0,1,2) 전달
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            // 각 탭에 대한 뷰 생성
-            View rootView;
-            final CalendarView view;
-
-            int sectionNumber = (getArguments() != null) ? getArguments().getInt(ARG_SECTION_NUMBER) : 0;
-            switch (sectionNumber) {
-                case 0: //월
-                default:
-                    rootView = inflater.inflate(R.layout.fragment_calendar_monthly, container, false);
-                    view = rootView.findViewById(R.id.monthly_calendar_view);
-                    break;
-                case 1: //주
-                    rootView = inflater.inflate(R.layout.fragment_calendar_weekly, container, false);
-                    view = rootView.findViewById(R.id.weekly_calendar_view);
-                    break;
-                case 2: //일
-                    rootView = inflater.inflate(R.layout.fragment_calendar_daily, container, false);
-                    view = rootView.findViewById(R.id.daily_calendar_view);
-                    break;
-            }
-
-            // 각 탭에 대한 뷰에 제스쳐 등록
-            view.setOnSwipeGestureListener(new CustomGesture(new CustomGesture.OnSwipeGestureListener() {
-                @Override
-                public void swipeUp() {
-                    view.moveNext();
-                    view.invalidate();
-                }
-
-                @Override
-                public void swipeDown() {
-                    view.movePrevious();
-                    view.invalidate();
-                }
-
-                @Override
-                public void tap(float x, float y) {
-                    if (view.select(x, y))
-                        view.invalidate();
-                }
-            }));
-            return rootView;
-        }
-    }
-
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
         SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -134,4 +75,5 @@ public class CalendarActivity extends AppCompatActivity {
             return 3;
         }
     }
+
 }

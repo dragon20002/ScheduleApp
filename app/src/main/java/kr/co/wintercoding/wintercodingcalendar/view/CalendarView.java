@@ -17,6 +17,8 @@ import java.util.Calendar;
 import java.util.List;
 
 import kr.co.wintercoding.wintercodingcalendar.R;
+import kr.co.wintercoding.wintercodingcalendar.listener.CustomGesture;
+import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 
 public abstract class CalendarView extends View {
     protected final Paint normalTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -36,7 +38,7 @@ public abstract class CalendarView extends View {
 
     protected final String DAYS[] = {"일", "월", "화", "수", "목", "금", "토"};
     protected Calendar today, selected;
-    protected List<Calendar> schedules;
+    protected List<Schedule> schedules;
 
     protected GestureDetectorCompat gestureDetectorCompat = null;
 
@@ -179,12 +181,12 @@ public abstract class CalendarView extends View {
         return selected;
     }
 
-    public void addSchedule(Calendar calendar) {
-        schedules.add(calendar);
+    public void addSchedule(Schedule schedule) {
+        schedules.add(schedule);
     }
 
-    public void addSchedules(List<Calendar> calendars) {
-        schedules.addAll(calendars);
+    public void updateSchedules(List<Schedule> schedules) {
+        this.schedules = schedules;
     }
 
     public void setOnSwipeGestureListener(CustomGesture listener) {
