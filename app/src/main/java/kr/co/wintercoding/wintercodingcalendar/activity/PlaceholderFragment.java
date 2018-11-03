@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.Calendar;
 import java.util.List;
@@ -48,6 +49,7 @@ public class PlaceholderFragment extends Fragment {
         View rootView;
         FloatingActionButton fab;
         RecyclerView recyclerView;
+        TextView noTodoTextView;
         ScheduleAdapter adapter;
         CalendarView calendarView;
         BaseOnSwipeGestureListener onSwipeGestureListener;
@@ -57,14 +59,14 @@ public class PlaceholderFragment extends Fragment {
             case MONTHLY:
             default:
                 rootView = inflater.inflate(R.layout.fragment_calendar_monthly, container, false);
-                // 플로팅 액션 버튼
-                fab = rootView.findViewById(R.id.fab);
-                fab.setOnClickListener(new FabOnClickListener());
                 // 월 달력뷰
                 calendarView = rootView.findViewById(R.id.monthly_calendar_view);
                 onSwipeGestureListener = new MonthlyOnSwipeGestureListener(calendarView);
+                // 플로팅 액션 버튼
+                fab = rootView.findViewById(R.id.fab);
+                fab.setOnClickListener(new FabOnClickListener(calendarView));
                 // 스케줄 업데이트
-                new UpdateScheduleTask(calendarView, null).execute(sectionNumber);
+                new UpdateScheduleTask(calendarView, null, null).execute(sectionNumber);
                 break;
 
             case WEEKLY:
@@ -75,11 +77,12 @@ public class PlaceholderFragment extends Fragment {
                 recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
                 adapter = new ScheduleAdapter();
                 recyclerView.setAdapter(adapter);
+                noTodoTextView = rootView.findViewById(R.id.weekly_no_todo);
                 // 주 달력뷰
                 calendarView = rootView.findViewById(R.id.weekly_calendar_view);
-                onSwipeGestureListener = new WeeklyOnSwipeGestureListener(calendarView, adapter);
+                onSwipeGestureListener = new WeeklyOnSwipeGestureListener(calendarView, adapter, noTodoTextView);
                 // 스케줄 업데이트
-                new UpdateScheduleTask(calendarView, adapter).execute(sectionNumber);
+                new UpdateScheduleTask(calendarView, adapter, noTodoTextView).execute(sectionNumber);
                 break;
 
             case DAILY:
@@ -90,11 +93,12 @@ public class PlaceholderFragment extends Fragment {
                 recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
                 adapter = new ScheduleAdapter();
                 recyclerView.setAdapter(adapter);
+                noTodoTextView = rootView.findViewById(R.id.daily_no_todo);
                 // 일 달력뷰
                 calendarView = rootView.findViewById(R.id.daily_calendar_view);
-                onSwipeGestureListener = new DailyOnSwipeGestureListener(calendarView, adapter);
+                onSwipeGestureListener = new DailyOnSwipeGestureListener(calendarView, adapter, noTodoTextView);
                 // 스케줄 업데이트
-                new UpdateScheduleTask(calendarView, adapter).execute(sectionNumber);
+                new UpdateScheduleTask(calendarView, adapter, noTodoTextView).execute(sectionNumber);
                 break;
         }
 
@@ -112,47 +116,60 @@ public class PlaceholderFragment extends Fragment {
 
         @Override
         protected void updateSchedules() {
-            new UpdateScheduleTask(view, null).execute(MONTHLY);
+            new UpdateScheduleTask(view, null, null).execute(MONTHLY);
         }
     }
 
     private class WeeklyOnSwipeGestureListener extends BaseOnSwipeGestureListener {
         private final ScheduleAdapter adapter;
+        private final TextView noTodoTextView;
 
-        private WeeklyOnSwipeGestureListener(CalendarView view, ScheduleAdapter adapter) {
+        private WeeklyOnSwipeGestureListener(CalendarView view, ScheduleAdapter adapter, TextView noTodoTextView) {
             super(view);
             this.adapter = adapter;
+            this.noTodoTextView = noTodoTextView;
         }
 
         @Override
         protected void updateSchedules() {
-            new UpdateScheduleTask(view, adapter).execute(WEEKLY);
+            new UpdateScheduleTask(view, adapter, noTodoTextView).execute(WEEKLY);
         }
     }
 
     private class DailyOnSwipeGestureListener extends BaseOnSwipeGestureListener {
         private final ScheduleAdapter adapter;
+        private final TextView noTodoTextView;
 
-        private DailyOnSwipeGestureListener(CalendarView view, ScheduleAdapter adapter) {
+        private DailyOnSwipeGestureListener(CalendarView view, ScheduleAdapter adapter, TextView noTodoTextView) {
             super(view);
             this.adapter = adapter;
+            this.noTodoTextView = noTodoTextView;
         }
 
         @Override
         protected void updateSchedules() {
-            new UpdateScheduleTask(view, adapter).execute(DAILY);
+            new UpdateScheduleTask(view, adapter, noTodoTextView).execute(DAILY);
         }
     }
 
     private class FabOnClickListener implements View.OnClickListener {
+        private final CalendarView calendarView;
+
+        FabOnClickListener(CalendarView calendarView) {
+            this.calendarView = calendarView;
+        }
 
         @Override
         public void onClick(View v) {
             CalendarActivity activity = (CalendarActivity) getActivity();
             if (activity == null) return;
 
+            Calendar sel = calendarView.getSelected();
             activity.startActivityForResult(
-                    new Intent(activity, ManageScheduleActivity.class),
+                    new Intent(activity, ManageScheduleActivity.class)
+                            .putExtra("year", sel.get(Calendar.YEAR))
+                            .putExtra("month", sel.get(Calendar.MONTH))
+                            .putExtra("date", sel.get(Calendar.DATE)),
                     CalendarActivity.MANAGE_SCHEDULE_REQ_CODE);
         }
     }
@@ -160,12 +177,14 @@ public class PlaceholderFragment extends Fragment {
     /* THREAD */
     @SuppressLint("StaticFieldLeak")
     private class UpdateScheduleTask extends AsyncTask<Integer, Void, List<Schedule>> {
-        private final CalendarView view;
+        private final CalendarView calendarView;
         private final ScheduleAdapter adapter;
+        private final TextView noTodoTextView;
 
-        private UpdateScheduleTask(CalendarView view, ScheduleAdapter adapter) {
-            this.view = view;
+        private UpdateScheduleTask(CalendarView view, ScheduleAdapter adapter, TextView noTodoTextView) {
+            this.calendarView = view;
             this.adapter = adapter;
+            this.noTodoTextView = noTodoTextView;
         }
 
         @Override
@@ -178,23 +197,23 @@ public class PlaceholderFragment extends Fragment {
             ScheduleDao scheduleDao = activity.getScheduleDao();
 
             // 탭에 넣을 데이터
-            Calendar cal = Calendar.getInstance();
+            Calendar sel = calendarView.getSelected();
             int year, month, week, date;
             List<Schedule> schedules;
 
             if (sectionNumber == MONTHLY) {
-                year = cal.get(Calendar.YEAR);
-                month = cal.get(Calendar.MONTH);
+                year = sel.get(Calendar.YEAR);
+                month = sel.get(Calendar.MONTH);
                 schedules = scheduleDao.getMonthlySchedules(year, month);
             } else if (sectionNumber == WEEKLY) {
-                year = cal.get(Calendar.YEAR);
-                month = cal.get(Calendar.MONTH);
-                week = cal.get(Calendar.WEEK_OF_MONTH);
+                year = sel.get(Calendar.YEAR);
+                month = sel.get(Calendar.MONTH);
+                week = sel.get(Calendar.WEEK_OF_MONTH);
                 schedules = scheduleDao.getWeeklySchedules(year, month, week);
             } else {
-                year = cal.get(Calendar.YEAR);
-                month = cal.get(Calendar.MONTH);
-                date = cal.get(Calendar.DATE);
+                year = sel.get(Calendar.YEAR);
+                month = sel.get(Calendar.MONTH);
+                date = sel.get(Calendar.DATE);
                 schedules = scheduleDao.getDailySchedules(year, month, date);
             }
 
@@ -206,9 +225,14 @@ public class PlaceholderFragment extends Fragment {
             if (adapter != null) {
                 adapter.addAll(schedules);
                 adapter.notifyDataSetChanged();
+                if (adapter.getItemCount() == 0) {
+                    noTodoTextView.setVisibility(View.VISIBLE);
+                } else {
+                    noTodoTextView.setVisibility(View.GONE);
+                }
             }
-            view.updateSchedules(schedules);
-            view.invalidate();
+            calendarView.updateSchedules(schedules);
+            calendarView.invalidate();
         }
     }
 }

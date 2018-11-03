@@ -11,7 +11,7 @@ import java.util.Locale;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 
 public class WeeklyCalendarView extends CalendarView {
-    private int[] dates = new int[7];
+    private final int[] dates = new int[7];
 
     public WeeklyCalendarView(Context context) {
         super(context);

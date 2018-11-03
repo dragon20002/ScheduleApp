@@ -11,7 +11,7 @@ import java.util.Locale;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 
 public class MonthlyCalendarView extends CalendarView {
-    private int[][] dates = new int[6][7];
+    private final int[][] dates = new int[6][7];
 
     public MonthlyCalendarView(Context context) {
         super(context);
@@ -52,15 +52,6 @@ public class MonthlyCalendarView extends CalendarView {
             }
         }
         return false;
-    }
-
-    @Override
-    protected void drawDate(Canvas canvas, int year, int month, int date, int day, float x, float y) {
-        super.drawDate(canvas, year, month, date, day, x, y);
-        if (numOfSchedules[date - 1] > 0) {
-            canvas.drawCircle(x + dipToPx(15f), y - dipToPx(15f), dipToPx(6f), notifyColorPaint);
-            canvas.drawText(String.valueOf(numOfSchedules[date - 1]), x + dipToPx(15f), y - dipToPx(12f), smallTextPaint);
-        }
     }
 
     @Override
@@ -114,7 +105,9 @@ public class MonthlyCalendarView extends CalendarView {
     public void addSchedule(Schedule schedule) {
         int selYear = selected.get(Calendar.YEAR);
         int selMonth = selected.get(Calendar.MONTH);
-        if (selYear == schedule.getYear() && selMonth == schedule.getMonth())
+        if (selYear == schedule.getYear() && selMonth == schedule.getMonth()) {
+            numOfSchedules[schedule.getDate() - 1]++;
             schedules.add(schedule);
+        }
     }
 }

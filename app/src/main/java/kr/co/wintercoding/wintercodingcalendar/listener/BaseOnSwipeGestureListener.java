@@ -3,9 +3,9 @@ package kr.co.wintercoding.wintercodingcalendar.listener;
 import kr.co.wintercoding.wintercodingcalendar.view.CalendarView;
 
 public abstract class BaseOnSwipeGestureListener implements CustomGesture.OnSwipeGestureListener {
-    protected CalendarView view;
+    protected final CalendarView view;
 
-    public BaseOnSwipeGestureListener(CalendarView view) {
+    protected BaseOnSwipeGestureListener(CalendarView view) {
         this.view = view;
     }
 

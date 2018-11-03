@@ -11,9 +11,12 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.Toast;
 
 import kr.co.wintercoding.wintercodingcalendar.R;
+import kr.co.wintercoding.wintercodingcalendar.adapter.ScheduleAdapter;
 import kr.co.wintercoding.wintercodingcalendar.dao.AppDatabase;
 import kr.co.wintercoding.wintercodingcalendar.dao.ScheduleDao;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
@@ -71,22 +74,38 @@ public class CalendarActivity extends AppCompatActivity {
                 if (data == null)
                     return;
 
-                long id = data.getLongExtra("id", -1);
-                if (id == -1)
+                String content = data.getStringExtra("content");
+                if (content.equals(""))
                     return;
 
-                String content = data.getStringExtra("content");
                 int year = data.getIntExtra("year", 0);
                 int month = data.getIntExtra("month", 0);
                 int week = data.getIntExtra("week", 0);
                 int date = data.getIntExtra("date", 0);
 
+                SectionsPagerAdapter pagerAdapter = (SectionsPagerAdapter) viewPager.getAdapter();
+                if (pagerAdapter == null)
+                    return;
+
+                int calendarIds[] = {R.id.monthly_calendar_view, R.id.weekly_calendar_view, R.id.daily_calendar_view};
+                int listIds[] = {-1, R.id.weekly_todo_recycler_view, R.id.daily_todo_recycler_view};
                 for (int i = 0; i < tabLayout.getTabCount(); i++) {
-                    TabLayout.Tab tab = tabLayout.getTabAt(i);
-                    if (tab != null) {
-                        CalendarView view = (CalendarView) tab.getCustomView();
+                    PlaceholderFragment fragment = (PlaceholderFragment) pagerAdapter.getFragment(i);
+                    if (fragment != null) {
+                        View view = fragment.getView();
                         if (view != null) {
-                            view.addSchedule(new Schedule(id, content, year, month, week, date));
+                            CalendarView calendarView = view.findViewById(calendarIds[i]);
+                            Schedule schedule = new Schedule(content, year, month, week, date);
+                            calendarView.addSchedule(schedule);
+                            calendarView.invalidate();
+                            if (listIds[i] != -1) {
+                                RecyclerView recyclerView = view.findViewById(listIds[i]);
+                                ScheduleAdapter scheduleAdapter = (ScheduleAdapter) recyclerView.getAdapter();
+                                if (scheduleAdapter != null) {
+                                    scheduleAdapter.add(schedule);
+                                    scheduleAdapter.notifyDataSetChanged();
+                                }
+                            }
                         }
                     }
                 }
@@ -103,7 +122,9 @@ public class CalendarActivity extends AppCompatActivity {
         return scheduleDao;
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    class SectionsPagerAdapter extends FragmentPagerAdapter {
+        final Fragment[] fragment = { null, null, null };
+
         SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -111,12 +132,17 @@ public class CalendarActivity extends AppCompatActivity {
         @Override
         public Fragment getItem(int position) {
             // 뷰페이저 페이지번호(0,1,2)에 해당하는 프래그먼트 반환
-            return PlaceholderFragment.newInstance(position);
+            fragment[position] = PlaceholderFragment.newInstance(position);
+            return fragment[position];
         }
 
         @Override
         public int getCount() {
             return 3;
+        }
+
+        Fragment getFragment(int position) {
+            return fragment[position];
         }
     }
 

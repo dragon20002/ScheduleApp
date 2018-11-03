@@ -11,7 +11,6 @@ import java.util.Locale;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 
 public class DailyCalendarView extends CalendarView {
-    protected int date;
 
     public DailyCalendarView(Context context) {
         super(context);
@@ -60,7 +59,6 @@ public class DailyCalendarView extends CalendarView {
             hinterval = width / 7;
             vinterval = width / 7;
         }
-        date = 0;
 
         // month
         int year = selected.get(Calendar.YEAR);

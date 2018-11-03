@@ -21,29 +21,30 @@ import kr.co.wintercoding.wintercodingcalendar.listener.CustomGesture;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 
 public abstract class CalendarView extends View {
-    protected final Paint smallTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    protected final Paint normalTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    protected final Paint boldTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    protected final Paint redTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    protected final Paint blueTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    protected final Paint largeTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint smallTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    final Paint normalTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint boldTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    final Paint redTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    final Paint blueTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    final Paint largeTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    protected final Paint primaryColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    protected final Paint primaryDarkColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    protected final Paint accentColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    protected final Paint notifyColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint primaryColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint primaryDarkColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint accentColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint notifyColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    protected int width = 0;
-    protected float center = 0;
-    protected float hinterval = 0;
-    protected float vinterval = 0;
+    int width = 0;
+    float center = 0;
+    float hinterval = 0;
+    float vinterval = 0;
 
-    protected final String DAYS[] = {"일", "월", "화", "수", "목", "금", "토"};
-    protected Calendar today, selected;
-    protected List<Schedule> schedules;
-    protected int[] numOfSchedules = new int[31];
+    final String[] DAYS = {"일", "월", "화", "수", "목", "금", "토"};
+    private Calendar today;
+    Calendar selected;
+    List<Schedule> schedules;
+    final int[] numOfSchedules = new int[31];
 
-    protected GestureDetectorCompat gestureDetectorCompat = null;
+    private GestureDetectorCompat gestureDetectorCompat = null;
 
     public CalendarView(Context context) {
         super(context);
@@ -60,7 +61,7 @@ public abstract class CalendarView extends View {
         init();
     }
 
-    protected void initTextPaint(Paint paint, float size, int color, Typeface typeface) {
+    private void initTextPaint(Paint paint, float size, int color, Typeface typeface) {
         paint.setTextSize(size);
         paint.setTextAlign(Paint.Align.CENTER);
         if (color != -1)
@@ -69,7 +70,7 @@ public abstract class CalendarView extends View {
             paint.setTypeface(typeface);
     }
 
-    protected void initColorPaint(Paint paint, int color) {
+    private void initColorPaint(Paint paint, int color) {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(dipToPx(3f));
         paint.setColor(color);
@@ -99,7 +100,7 @@ public abstract class CalendarView extends View {
 
     public abstract boolean select(float x, float y);
 
-    protected void drawDate(Canvas canvas, int year, int month, int date, int day, float x, float y) {
+    void drawDate(Canvas canvas, int year, int month, int date, int day, float x, float y) {
         if (selected.get(Calendar.DATE) == date)
             canvas.drawCircle(x, y - dipToPx(8f), dipToPx(15f), accentColorPaint);
         if (today.get(Calendar.YEAR) == year && today.get(Calendar.MONTH) == month && today.get(Calendar.DATE) == date)
@@ -111,6 +112,10 @@ public abstract class CalendarView extends View {
                 canvas.drawText(String.valueOf(date), x, y, blueTextPaint);
             else
                 canvas.drawText(String.valueOf(date), x, y, normalTextPaint);
+        }
+        if (numOfSchedules[date - 1] > 0) {
+            canvas.drawCircle(x + dipToPx(15f), y - dipToPx(15f), dipToPx(6f), notifyColorPaint);
+            canvas.drawText(String.valueOf(numOfSchedules[date - 1]), x + dipToPx(15f), y - dipToPx(12f), smallTextPaint);
         }
     }
 
@@ -126,7 +131,7 @@ public abstract class CalendarView extends View {
      * @param month 월 입력 (0-11)
      * @return 이번 달 1일의 요일을 반환
      */
-    protected int getFirstDayOfMonth(int year, int month) {
+    int getFirstDayOfMonth(int year, int month) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, month);
@@ -139,7 +144,7 @@ public abstract class CalendarView extends View {
      * @param month 월 입력 (0-11)
      * @return 이번 달 마지막 날을 반환
      */
-    protected int getLastDateOfMonth(int year, int month) {
+    int getLastDateOfMonth(int year, int month) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, month);
@@ -153,7 +158,7 @@ public abstract class CalendarView extends View {
      * @param month 현재 월 입력 (0-11)
      * @return 저번 달 마지막 날을 반환
      */
-    protected int getLastDateOfLastMonth(int year, int month) {
+    int getLastDateOfLastMonth(int year, int month) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, month);
@@ -163,7 +168,7 @@ public abstract class CalendarView extends View {
         return calendar.get(Calendar.DATE);
     }
 
-    protected float dipToPx(float dip) {
+    private float dipToPx(float dip) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, getContext().getResources().getDisplayMetrics());
     }
 

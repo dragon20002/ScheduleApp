@@ -12,7 +12,7 @@ public class CustomGesture extends GestureDetector.SimpleOnGestureListener {
         void tap(float x, float y);
     }
 
-    private OnSwipeGestureListener listener;
+    private final OnSwipeGestureListener listener;
 
     public CustomGesture(OnSwipeGestureListener listener) {
         this.listener = listener;

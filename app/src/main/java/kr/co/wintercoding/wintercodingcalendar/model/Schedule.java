@@ -4,10 +4,11 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 @Entity
 public class Schedule {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private long id;
     @ColumnInfo
     private String content;
@@ -20,7 +21,6 @@ public class Schedule {
     @ColumnInfo
     private int date; //1-31
 
-    @Ignore
     public Schedule(String content, int year, int month, int week, int date) {
         this.content = content;
         this.year = year;
@@ -29,6 +29,7 @@ public class Schedule {
         this.date = date;
     }
 
+    @Ignore
     public Schedule(long id, String content, int year, int month, int week, int date) {
         this(content, year, month, week, date);
         this.id = id;
@@ -80,5 +81,18 @@ public class Schedule {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Schedule{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", year=" + year +
+                ", month=" + month +
+                ", week=" + week +
+                ", date=" + date +
+                '}';
     }
 }

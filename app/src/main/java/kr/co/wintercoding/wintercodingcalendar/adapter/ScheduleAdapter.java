@@ -11,10 +11,10 @@ import java.util.List;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 
 public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.ScheduleViewHolder> {
-    private List<Schedule> schedules = new ArrayList<>();
+    private final List<Schedule> schedules = new ArrayList<>();
 
     class ScheduleViewHolder extends RecyclerView.ViewHolder {
-        private TextView textView;
+        private final TextView textView;
 
         private ScheduleViewHolder(@NonNull TextView v) {
             super(v);
@@ -37,6 +37,10 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
     @Override
     public int getItemCount() {
         return schedules.size();
+    }
+
+    public void add(Schedule schedule) {
+        this.schedules.add(schedule);
     }
 
     public void addAll(List<Schedule> schedules) {

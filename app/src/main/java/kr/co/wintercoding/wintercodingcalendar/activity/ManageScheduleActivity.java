@@ -123,7 +123,7 @@ public class ManageScheduleActivity extends AppCompatActivity {
 
     @SuppressLint("StaticFieldLeak")
     private class UpdateScheduleTask extends AsyncTask<Void, Void, Void> {
-        private Schedule schedule;
+        private final Schedule schedule;
 
         private UpdateScheduleTask(Schedule schedule) {
             this.schedule = schedule;
@@ -144,10 +144,10 @@ public class ManageScheduleActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             progressBar.setVisibility(View.GONE);
             Intent intent = new Intent()
-                    .putExtra("id", schedule.getId())
                     .putExtra("content", schedule.getContent())
                     .putExtra("year", schedule.getYear())
                     .putExtra("month", schedule.getMonth())
+                    .putExtra("week", schedule.getWeek())
                     .putExtra("date", schedule.getDate());
             setResult(RESULT_OK, intent);
             finish();
