@@ -177,10 +177,15 @@ public class MonthlyCalendarView extends CalendarView {
                     drawDate(canvas, year, month, dates[i][j], j, center + (j - 3) * hinterval, (4 + i) * vinterval);
     }
 
-    public void addSchedule(Schedule schedule) {
+    @Override
+    public boolean isValid(Schedule schedule) {
         int selYear = selected.get(Calendar.YEAR);
         int selMonth = selected.get(Calendar.MONTH);
-        if (selYear == schedule.getYear() && selMonth == schedule.getMonth()) {
+        return selYear == schedule.getYear() && selMonth == schedule.getMonth();
+    }
+
+    public void addSchedule(Schedule schedule) {
+        if (isValid(schedule)) {
             for (Schedule s : schedules) {
                 if (s.getId() == schedule.getId()) {
                     // 기존 일정 업데이트

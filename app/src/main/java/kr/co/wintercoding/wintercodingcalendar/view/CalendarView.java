@@ -115,6 +115,8 @@ public abstract class CalendarView extends View {
         return selected;
     }
 
+    public abstract boolean isValid(Schedule schedule);
+
     public abstract void addSchedule(Schedule schedule);
 
     public void updateSchedules(List<Schedule> schedules) {

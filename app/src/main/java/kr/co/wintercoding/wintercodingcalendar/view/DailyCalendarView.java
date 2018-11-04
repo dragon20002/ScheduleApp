@@ -133,18 +133,23 @@ public class DailyCalendarView extends CalendarView {
 
         drawDate(canvas, year, month, date, day - 1, center, 4 * vinterval);
         if (day == 1)
-            canvas.drawText(DAYS[day-1] + "요일", center + 2 * hinterval, 4 * vinterval, smallRedTextPaint);
+            canvas.drawText(DAYS[day - 1] + "요일", center + 2 * hinterval, 4 * vinterval, smallRedTextPaint);
         else if (day == 7)
-            canvas.drawText(DAYS[day-1] + "요일", center + 2 * hinterval, 4 * vinterval, smallBlueTextPaint);
+            canvas.drawText(DAYS[day - 1] + "요일", center + 2 * hinterval, 4 * vinterval, smallBlueTextPaint);
         else
-            canvas.drawText(DAYS[day-1] + "요일", center + 2 * hinterval, 4 * vinterval, smallTextPaint);
+            canvas.drawText(DAYS[day - 1] + "요일", center + 2 * hinterval, 4 * vinterval, smallTextPaint);
     }
 
-    public void addSchedule(Schedule schedule) {
+    @Override
+    public boolean isValid(Schedule schedule) {
         int selYear = selected.get(Calendar.YEAR);
         int selMonth = selected.get(Calendar.MONTH);
         int selDate = selected.get(Calendar.DATE);
-        if (selYear == schedule.getYear() && selMonth == schedule.getMonth() && selDate == schedule.getDate()) {
+        return selYear == schedule.getYear() && selMonth == schedule.getMonth() && selDate == schedule.getDate();
+    }
+
+    public void addSchedule(Schedule schedule) {
+        if (isValid(schedule)) {
             for (Schedule s : schedules) {
                 if (s.getId() == schedule.getId()) {
                     // 기존 일정 업데이트
@@ -156,7 +161,7 @@ public class DailyCalendarView extends CalendarView {
                     return;
                 }
             }
-            numOfSchedules[selDate - 1]++;
+            numOfSchedules[schedule.getDate() - 1]++;
             schedules.add(schedule);
         }
     }

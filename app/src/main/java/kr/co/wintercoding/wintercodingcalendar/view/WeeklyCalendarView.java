@@ -199,11 +199,16 @@ public class WeeklyCalendarView extends CalendarView {
             drawDate(canvas, year, month, dates[i], i, center + (i - 3) * hinterval, 4 * vinterval);
     }
 
-    public void addSchedule(Schedule schedule) {
+    @Override
+    public boolean isValid(Schedule schedule) {
         int selYear = selected.get(Calendar.YEAR);
         int selMonth = selected.get(Calendar.MONTH);
         int selWeek = selected.get(Calendar.WEEK_OF_MONTH);
-        if (selYear == schedule.getYear() && selMonth == schedule.getMonth() && selWeek == schedule.getWeek()) {
+        return selYear == schedule.getYear() && selMonth == schedule.getMonth() && selWeek == schedule.getWeek();
+    }
+
+    public void addSchedule(Schedule schedule) {
+        if (isValid(schedule)) {
             for (Schedule s : schedules) {
                 if (s.getId() == schedule.getId()) {
                     // 기존 일정 업데이트

@@ -107,7 +107,7 @@ public class CalendarActivity extends AppCompatActivity {
                                     if (listIds[i] != -1) {
                                         RecyclerView recyclerView = view.findViewById(listIds[i]);
                                         ScheduleAdapter scheduleAdapter = (ScheduleAdapter) recyclerView.getAdapter();
-                                        if (scheduleAdapter != null) {
+                                        if (scheduleAdapter != null && calendarView.isValid(schedule)) {
                                             scheduleAdapter.add(schedule);
                                             scheduleAdapter.notifyDataSetChanged();
                                             TextView tvNoTodo = view.findViewById(noTodoIds[i]);

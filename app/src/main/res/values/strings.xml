@@ -4,7 +4,7 @@
     <string name="tab_monthly">Monthly</string>
     <string name="tab_weekly">Weekly</string>
     <string name="tab_daily">Daily</string>
-    <string name="developer">김민우\ngithub.com/dragon20002</string>
+    <string name="developer">김민우 github.com/dragon20002</string>
     <!-- Strings related to manage schedule -->
     <string name="title_activity_register_schedule">일정 관리</string>
     <string name="prompt_content">제목</string>
