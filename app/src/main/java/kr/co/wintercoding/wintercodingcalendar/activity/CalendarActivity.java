@@ -102,17 +102,27 @@ public class CalendarActivity extends AppCompatActivity {
                             switch (tag) {
                                 case 0: //INSERT
                                 case 1: //UPDATE
+                                    calendarView.removeSchedule(schedule);
                                     calendarView.addSchedule(schedule);
                                     calendarView.invalidate();
                                     if (listIds[i] != -1) {
                                         RecyclerView recyclerView = view.findViewById(listIds[i]);
                                         ScheduleAdapter scheduleAdapter = (ScheduleAdapter) recyclerView.getAdapter();
-                                        if (scheduleAdapter != null && calendarView.isValid(schedule)) {
-                                            scheduleAdapter.add(schedule);
-                                            scheduleAdapter.notifyDataSetChanged();
-                                            TextView tvNoTodo = view.findViewById(noTodoIds[i]);
-                                            if (scheduleAdapter.getItemCount() > 0) {
-                                                tvNoTodo.setVisibility(View.GONE);
+                                        if (scheduleAdapter != null) {
+                                            if (calendarView.isValid(schedule)) {
+                                                scheduleAdapter.add(schedule);
+                                                scheduleAdapter.notifyDataSetChanged();
+                                                if (scheduleAdapter.getItemCount() > 0) {
+                                                    TextView tvNoTodo = view.findViewById(noTodoIds[i]);
+                                                    tvNoTodo.setVisibility(View.GONE);
+                                                }
+                                            } else {
+                                                scheduleAdapter.remove(schedule);
+                                                scheduleAdapter.notifyDataSetChanged();
+                                                if (scheduleAdapter.getItemCount() == 0) {
+                                                    TextView tvNoTodo = view.findViewById(noTodoIds[i]);
+                                                    tvNoTodo.setVisibility(View.VISIBLE);
+                                                }
                                             }
                                         }
                                     }
@@ -126,8 +136,8 @@ public class CalendarActivity extends AppCompatActivity {
                                         if (scheduleAdapter != null) {
                                             scheduleAdapter.remove(schedule);
                                             scheduleAdapter.notifyDataSetChanged();
-                                            TextView tvNoTodo = view.findViewById(noTodoIds[i]);
                                             if (scheduleAdapter.getItemCount() == 0) {
+                                                TextView tvNoTodo = view.findViewById(noTodoIds[i]);
                                                 tvNoTodo.setVisibility(View.VISIBLE);
                                             }
                                         }
