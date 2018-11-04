@@ -2,27 +2,77 @@ package kr.co.wintercoding.wintercodingcalendar.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 
 import java.util.Calendar;
 import java.util.Locale;
 
+import kr.co.wintercoding.wintercodingcalendar.R;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 
 public class MonthlyCalendarView extends CalendarView {
+    private final Paint smallTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint normalTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint boldTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint redTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint blueTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint largeTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    private final Paint primaryColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint secondColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint accentColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint notifyColorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
     private final int[][] dates = new int[6][7];
 
     public MonthlyCalendarView(Context context) {
         super(context);
+        init();
     }
 
     public MonthlyCalendarView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public MonthlyCalendarView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void initTextPaint(Paint paint, float size, int color, Typeface typeface) {
+        paint.setTextSize(size);
+        paint.setTextAlign(Paint.Align.CENTER);
+        if (color != -1)
+            paint.setColor(color);
+        if (typeface != null)
+            paint.setTypeface(typeface);
+    }
+
+    private void initColorPaint(Paint paint, int color) {
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(dipToPx(3f));
+        paint.setColor(color);
+    }
+
+    private void init() {
+        initTextPaint(smallTextPaint, dipToPx(10f), Color.argb(255, 250, 250, 250), null);
+        initTextPaint(normalTextPaint, dipToPx(20f), -1, null);
+        initTextPaint(boldTextPaint, dipToPx(22f), -1, Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        initTextPaint(redTextPaint, dipToPx(20f), Color.RED, null);
+        initTextPaint(blueTextPaint, dipToPx(20f), Color.BLUE, null);
+        initTextPaint(largeTextPaint, dipToPx(30f), -1, null);
+        primaryColorPaint.setStyle(Paint.Style.FILL);
+        primaryColorPaint.setColor(getResources().getColor(R.color.colorPrimary));
+        initColorPaint(accentColorPaint, getResources().getColor(R.color.colorAccent));
+        secondColorPaint.setStyle(Paint.Style.FILL);
+        secondColorPaint.setColor(getResources().getColor(R.color.colorSecond));
+        notifyColorPaint.setStyle(Paint.Style.FILL);
+        notifyColorPaint.setColor(getResources().getColor(R.color.colorAccent));
     }
 
     @Override
@@ -54,6 +104,25 @@ public class MonthlyCalendarView extends CalendarView {
         return false;
     }
 
+    void drawDate(Canvas canvas, int year, int month, int date, int day, float x, float y) {
+        if (selected.get(Calendar.DATE) == date)
+            canvas.drawCircle(x, y - dipToPx(8f), dipToPx(15f), accentColorPaint);
+        if (today.get(Calendar.YEAR) == year && today.get(Calendar.MONTH) == month && today.get(Calendar.DATE) == date)
+            canvas.drawText(String.valueOf(date), x, y, boldTextPaint);
+        else {
+            if (day == 0)
+                canvas.drawText(String.valueOf(date), x, y, redTextPaint);
+            else if (day == 6)
+                canvas.drawText(String.valueOf(date), x, y, blueTextPaint);
+            else
+                canvas.drawText(String.valueOf(date), x, y, normalTextPaint);
+        }
+        if (numOfSchedules[date - 1] > 0) {
+            canvas.drawCircle(x + dipToPx(15f), y - dipToPx(15f), dipToPx(6f), notifyColorPaint);
+            canvas.drawText(String.valueOf(numOfSchedules[date - 1]), x + dipToPx(15f), y - dipToPx(12f), smallTextPaint);
+        }
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -68,10 +137,20 @@ public class MonthlyCalendarView extends CalendarView {
             for (int j = 0; j < 7; j++)
                 dates[i][j] = 0;
 
-        // month
         int year = selected.get(Calendar.YEAR);
         int month = selected.get(Calendar.MONTH); //0-11
+        int firstDayOfMonth = getFirstDayOfMonth(year, month);
+        int lastDateOfMonth = getLastDateOfMonth(year, month);
+        int numOfWeeks = (lastDateOfMonth + firstDayOfMonth - 2) / 7 + 1;
+        int date = 1;
+
+        // month
         canvas.drawText(String.format(Locale.KOREA, "%d 년 %02d 월", year, month + 1), center, 1.5f * vinterval, largeTextPaint);
+        float bgLeft = center - 4 * hinterval, bgRight = center + 4 * hinterval;
+        canvas.drawRect(bgLeft, 2.45f * vinterval, bgRight, 3.35f * vinterval, primaryColorPaint);
+        for (int i = 0; i < numOfWeeks; i++) {
+            canvas.drawRect(bgLeft, (3.45f + i) * vinterval, bgRight, (4.35f + i) * vinterval, secondColorPaint);
+        }
 
         // 7 days
         canvas.drawText(DAYS[0], center - 3 * hinterval, 3 * vinterval, redTextPaint);
@@ -80,10 +159,6 @@ public class MonthlyCalendarView extends CalendarView {
         canvas.drawText(DAYS[6], center + 3 * hinterval, 3 * vinterval, blueTextPaint);
 
         // date
-        int firstDayOfMonth = getFirstDayOfMonth(year, month);
-        int lastDateOfMonth = getLastDateOfMonth(year, month);
-        int numOfWeeks = (lastDateOfMonth + firstDayOfMonth - 2) / 7 + 1;
-        int date = 1;
         // first week
         for (int day = firstDayOfMonth - 1; day < 7; day++)
             dates[0][day] = date++;
@@ -106,6 +181,17 @@ public class MonthlyCalendarView extends CalendarView {
         int selYear = selected.get(Calendar.YEAR);
         int selMonth = selected.get(Calendar.MONTH);
         if (selYear == schedule.getYear() && selMonth == schedule.getMonth()) {
+            for (Schedule s : schedules) {
+                if (s.getId() == schedule.getId()) {
+                    // 기존 일정 업데이트
+                    s.setContent(schedule.getContent());
+                    s.setYear(schedule.getYear());
+                    s.setMonth(schedule.getMonth());
+                    s.setWeek(schedule.getWeek());
+                    s.setDate(schedule.getDate());
+                    return;
+                }
+            }
             numOfSchedules[schedule.getDate() - 1]++;
             schedules.add(schedule);
         }

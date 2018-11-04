@@ -27,10 +27,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/no_todo"
+        android:textSize="22sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/weekly_todo_recycler_view"
         app:layout_constraintEnd_toEndOf="@id/weekly_todo_recycler_view"
         app:layout_constraintStart_toStartOf="@id/weekly_todo_recycler_view"
         app:layout_constraintTop_toTopOf="@id/weekly_todo_recycler_view" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/weekly_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/fab_margin"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@android:drawable/ic_menu_today" />
 
 </android.support.constraint.ConstraintLayout>

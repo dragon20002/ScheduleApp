@@ -7,7 +7,7 @@ import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
 @Entity
-public class Schedule {
+public class Schedule implements Comparable<Schedule> {
     @PrimaryKey(autoGenerate = true)
     private long id;
     @ColumnInfo
@@ -94,5 +94,21 @@ public class Schedule {
                 ", week=" + week +
                 ", date=" + date +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Schedule another) {
+        long comp = this.year * 10000 + this.month * 100 + this.date;
+        long ancomp = another.year * 10000 + this.month * 100 + this.date;
+        if (comp == ancomp) {
+            if (this.id < another.id) {
+                return -1;
+            } else
+                return 1;
+        } else if (comp < ancomp) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
 }

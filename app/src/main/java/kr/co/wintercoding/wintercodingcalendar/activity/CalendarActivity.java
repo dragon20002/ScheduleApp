@@ -13,6 +13,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import kr.co.wintercoding.wintercodingcalendar.R;
@@ -57,14 +58,13 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onPause() {
         // 최근 선택한 탭 인덱스 저장
         SharedPreferences preferences = getSharedPreferences(PREF_SETTINGS, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt(PREF_TAB_INDEX, viewPager.getCurrentItem());
         editor.apply();
-
-        super.onDestroy();
+        super.onPause();
     }
 
     @Override
@@ -74,10 +74,12 @@ public class CalendarActivity extends AppCompatActivity {
                 if (data == null)
                     return;
 
-                String content = data.getStringExtra("content");
-                if (content.equals(""))
+                int tag = data.getIntExtra("tag", -1);
+                if (tag == -1)
                     return;
 
+                long id = data.getLongExtra("id", 0);
+                String content = data.getStringExtra("content");
                 int year = data.getIntExtra("year", 0);
                 int month = data.getIntExtra("month", 0);
                 int week = data.getIntExtra("week", 0);
@@ -89,22 +91,48 @@ public class CalendarActivity extends AppCompatActivity {
 
                 int calendarIds[] = {R.id.monthly_calendar_view, R.id.weekly_calendar_view, R.id.daily_calendar_view};
                 int listIds[] = {-1, R.id.weekly_todo_recycler_view, R.id.daily_todo_recycler_view};
+                int noTodoIds[] = {-1, R.id.weekly_no_todo, R.id.daily_no_todo};
                 for (int i = 0; i < tabLayout.getTabCount(); i++) {
                     PlaceholderFragment fragment = (PlaceholderFragment) pagerAdapter.getFragment(i);
                     if (fragment != null) {
                         View view = fragment.getView();
                         if (view != null) {
                             CalendarView calendarView = view.findViewById(calendarIds[i]);
-                            Schedule schedule = new Schedule(content, year, month, week, date);
-                            calendarView.addSchedule(schedule);
-                            calendarView.invalidate();
-                            if (listIds[i] != -1) {
-                                RecyclerView recyclerView = view.findViewById(listIds[i]);
-                                ScheduleAdapter scheduleAdapter = (ScheduleAdapter) recyclerView.getAdapter();
-                                if (scheduleAdapter != null) {
-                                    scheduleAdapter.add(schedule);
-                                    scheduleAdapter.notifyDataSetChanged();
-                                }
+                            Schedule schedule = new Schedule(id, content, year, month, week, date);
+                            switch (tag) {
+                                case 0: //INSERT
+                                case 1: //UPDATE
+                                    calendarView.addSchedule(schedule);
+                                    calendarView.invalidate();
+                                    if (listIds[i] != -1) {
+                                        RecyclerView recyclerView = view.findViewById(listIds[i]);
+                                        ScheduleAdapter scheduleAdapter = (ScheduleAdapter) recyclerView.getAdapter();
+                                        if (scheduleAdapter != null) {
+                                            scheduleAdapter.add(schedule);
+                                            scheduleAdapter.notifyDataSetChanged();
+                                            TextView tvNoTodo = view.findViewById(noTodoIds[i]);
+                                            if (scheduleAdapter.getItemCount() > 0) {
+                                                tvNoTodo.setVisibility(View.GONE);
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case 2: //DELETE
+                                    calendarView.removeSchedule(schedule);
+                                    calendarView.invalidate();
+                                    if (listIds[i] != -1) {
+                                        RecyclerView recyclerView = view.findViewById(listIds[i]);
+                                        ScheduleAdapter scheduleAdapter = (ScheduleAdapter) recyclerView.getAdapter();
+                                        if (scheduleAdapter != null) {
+                                            scheduleAdapter.remove(schedule);
+                                            scheduleAdapter.notifyDataSetChanged();
+                                            TextView tvNoTodo = view.findViewById(noTodoIds[i]);
+                                            if (scheduleAdapter.getItemCount() == 0) {
+                                                tvNoTodo.setVisibility(View.VISIBLE);
+                                            }
+                                        }
+                                    }
+                                    break;
                             }
                         }
                     }
@@ -123,7 +151,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     class SectionsPagerAdapter extends FragmentPagerAdapter {
-        final Fragment[] fragment = { null, null, null };
+        final Fragment[] fragment = {null, null, null};
 
         SectionsPagerAdapter(FragmentManager fm) {
             super(fm);

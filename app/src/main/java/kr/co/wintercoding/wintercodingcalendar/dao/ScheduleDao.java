@@ -13,7 +13,7 @@ import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 @Dao
 public interface ScheduleDao {
 
-    @Query("SELECT * FROM schedule WHERE year=(:year) AND month=(:month) ORDER BY date AND id")
+    @Query("SELECT * FROM schedule WHERE year=(:year) AND month=(:month) ORDER BY date")
     List<Schedule> getMonthlySchedules(int year, int month);
 
     /**
@@ -22,7 +22,7 @@ public interface ScheduleDao {
      * @param week  주 1-6
      * @return 스케줄 목록
      */
-    @Query("SELECT * FROM schedule WHERE year=(:year) AND month=(:month) AND week=(:week) ORDER BY date AND id")
+    @Query("SELECT * FROM schedule WHERE year=(:year) AND month=(:month) AND week=(:week) ORDER BY date")
     List<Schedule> getWeeklySchedules(int year, int month, int week);
 
     /**
@@ -31,14 +31,14 @@ public interface ScheduleDao {
      * @param date  일 1-31
      * @return 스케줄 목록
      */
-    @Query("SELECT * FROM schedule WHERE year=(:year) AND month=(:month) AND date=(:date) ORDER BY id")
+    @Query("SELECT * FROM schedule WHERE year=(:year) AND month=(:month) AND date=(:date)")
     List<Schedule> getDailySchedules(int year, int month, int date);
 
     @Insert
-    void insert(Schedule schedule);
+    long insert(Schedule schedule);
 
     @Update
-    void update(Schedule schedule);
+    int update(Schedule schedule);
 
     @Delete
     void delete(Schedule schedule);

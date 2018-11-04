@@ -12,9 +12,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,10 +26,15 @@ import kr.co.wintercoding.wintercodingcalendar.dao.ScheduleDao;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 
 public class ManageScheduleActivity extends AppCompatActivity {
+    private static final int INSERT = 0;
+    private static final int UPDATE = 1;
+    private static final int DELETE = 2;
+
     private ScheduleDao scheduleDao;
     private EditText etContent;
     private DatePicker datePicker;
-    private ProgressBar progressBar;
+
+    private long id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +45,13 @@ public class ManageScheduleActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();
 
         Intent intent = getIntent();
+        id = intent.getLongExtra("id", -1);
         String content = intent.getStringExtra("content");
         if (content == null)
             content = "";
-        int year = intent.getIntExtra("year", cal.get(Calendar.YEAR));
-        int month = intent.getIntExtra("month", cal.get(Calendar.MONTH));
-        int date = intent.getIntExtra("date", cal.get(Calendar.DATE));
+        final int year = intent.getIntExtra("year", cal.get(Calendar.YEAR));
+        final int month = intent.getIntExtra("month", cal.get(Calendar.MONTH));
+        final int date = intent.getIntExtra("date", cal.get(Calendar.DATE));
 
         scheduleDao = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "schedule")
                 .build().scheduleDao();
@@ -56,10 +62,13 @@ public class ManageScheduleActivity extends AppCompatActivity {
 
         etContent = findViewById(R.id.schedule_content);
         datePicker = findViewById(R.id.manage_schedule_date_picker);
-        progressBar = findViewById(R.id.manage_schedule_progress);
+        Button btnDelete = findViewById(R.id.manage_schedule_delete);
 
         etContent.setText(content);
         datePicker.updateDate(year, month, date);
+        if (id == -1) {
+            btnDelete.setVisibility(View.GONE);
+        }
 
         etContent.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -69,6 +78,15 @@ public class ManageScheduleActivity extends AppCompatActivity {
                     return true;
                 }
                 return false;
+            }
+        });
+
+        final String finalContent = content;
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int week = getWeekOfMonth(year, month, date);
+                new UpdateScheduleTask(new Schedule(id, finalContent, year, month, week, date), DELETE).execute();
             }
         });
     }
@@ -115,47 +133,62 @@ public class ManageScheduleActivity extends AppCompatActivity {
         int date = datePicker.getDayOfMonth();
         int week = getWeekOfMonth(year, month, date);
 
-        if (!content.equals(""))
-            new UpdateScheduleTask(new Schedule(content, year, month, week, date)).execute();
-        else
+        if (!content.equals("")) {
+            if (id == -1) {
+                Schedule schedule = new Schedule(content, year, month, week, date);
+                new UpdateScheduleTask(schedule, INSERT).execute();
+            } else {
+                Schedule schedule = new Schedule(id, content, year, month, week, date);
+                new UpdateScheduleTask(schedule, UPDATE).execute();
+            }
+        } else {
             Toast.makeText(this, "일정을 입력해주세요.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @SuppressLint("StaticFieldLeak")
-    private class UpdateScheduleTask extends AsyncTask<Void, Void, Void> {
+    private class UpdateScheduleTask extends AsyncTask<Void, Void, Boolean> {
         private final Schedule schedule;
+        private int tag;
 
-        private UpdateScheduleTask(Schedule schedule) {
+        private UpdateScheduleTask(Schedule schedule, int tag) {
             this.schedule = schedule;
+            this.tag = tag;
         }
 
         @Override
-        protected Void doInBackground(Void... avoids) {
-            scheduleDao.insert(schedule);
-            return null;
+        protected Boolean doInBackground(Void... aVoids) {
+            switch (tag) {
+                case INSERT:
+                    id = scheduleDao.insert(schedule);
+                    schedule.setId(id);
+                    return true;
+                case UPDATE:
+                    int updateCnt = scheduleDao.update(schedule);
+                    return updateCnt >= 1; //업데이트된 행 개수가 1보다 적으면 실패
+                case DELETE:
+                    scheduleDao.delete(schedule);
+                    return true;
+            }
+            return false;
         }
 
         @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            progressBar.setVisibility(View.GONE);
-            Intent intent = new Intent()
-                    .putExtra("content", schedule.getContent())
-                    .putExtra("year", schedule.getYear())
-                    .putExtra("month", schedule.getMonth())
-                    .putExtra("week", schedule.getWeek())
-                    .putExtra("date", schedule.getDate());
-            setResult(RESULT_OK, intent);
-            finish();
-        }
-
-        @Override
-        protected void onCancelled() {
-            progressBar.setVisibility(View.GONE);
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                Intent intent = new Intent()
+                        .putExtra("tag", tag)
+                        .putExtra("id", schedule.getId())
+                        .putExtra("content", schedule.getContent())
+                        .putExtra("year", schedule.getYear())
+                        .putExtra("month", schedule.getMonth())
+                        .putExtra("week", schedule.getWeek())
+                        .putExtra("date", schedule.getDate());
+                setResult(RESULT_OK, intent);
+                finish();
+            } else {
+                Toast.makeText(ManageScheduleActivity.this, "일정 추가에 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

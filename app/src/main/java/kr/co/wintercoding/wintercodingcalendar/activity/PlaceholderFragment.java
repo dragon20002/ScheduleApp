@@ -25,7 +25,7 @@ import kr.co.wintercoding.wintercodingcalendar.listener.CustomGesture;
 import kr.co.wintercoding.wintercodingcalendar.model.Schedule;
 import kr.co.wintercoding.wintercodingcalendar.view.CalendarView;
 
-public class PlaceholderFragment extends Fragment {
+public class PlaceholderFragment extends Fragment implements ScheduleAdapter.CardViewOnClickListener {
     private static final String ARG_SECTION_NUMBER = "section_number";
     private static final int MONTHLY = 0;
     private static final int WEEKLY = 1;
@@ -63,7 +63,7 @@ public class PlaceholderFragment extends Fragment {
                 calendarView = rootView.findViewById(R.id.monthly_calendar_view);
                 onSwipeGestureListener = new MonthlyOnSwipeGestureListener(calendarView);
                 // 플로팅 액션 버튼
-                fab = rootView.findViewById(R.id.fab);
+                fab = rootView.findViewById(R.id.monthly_fab);
                 fab.setOnClickListener(new FabOnClickListener(calendarView));
                 // 스케줄 업데이트
                 new UpdateScheduleTask(calendarView, null, null).execute(sectionNumber);
@@ -73,14 +73,17 @@ public class PlaceholderFragment extends Fragment {
                 rootView = inflater.inflate(R.layout.fragment_calendar_weekly, container, false);
                 // 리스트뷰
                 recyclerView = rootView.findViewById(R.id.weekly_todo_recycler_view);
-                recyclerView.setHasFixedSize(true);
+
                 recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-                adapter = new ScheduleAdapter();
+                adapter = new ScheduleAdapter(this);
                 recyclerView.setAdapter(adapter);
                 noTodoTextView = rootView.findViewById(R.id.weekly_no_todo);
                 // 주 달력뷰
                 calendarView = rootView.findViewById(R.id.weekly_calendar_view);
                 onSwipeGestureListener = new WeeklyOnSwipeGestureListener(calendarView, adapter, noTodoTextView);
+                // 플로팅 액션 버튼
+                fab = rootView.findViewById(R.id.weekly_fab);
+                fab.setOnClickListener(new FabOnClickListener(calendarView));
                 // 스케줄 업데이트
                 new UpdateScheduleTask(calendarView, adapter, noTodoTextView).execute(sectionNumber);
                 break;
@@ -89,14 +92,16 @@ public class PlaceholderFragment extends Fragment {
                 rootView = inflater.inflate(R.layout.fragment_calendar_daily, container, false);
                 // 리스트뷰
                 recyclerView = rootView.findViewById(R.id.daily_todo_recycler_view);
-                recyclerView.setHasFixedSize(true);
                 recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-                adapter = new ScheduleAdapter();
+                adapter = new ScheduleAdapter(this);
                 recyclerView.setAdapter(adapter);
                 noTodoTextView = rootView.findViewById(R.id.daily_no_todo);
                 // 일 달력뷰
                 calendarView = rootView.findViewById(R.id.daily_calendar_view);
                 onSwipeGestureListener = new DailyOnSwipeGestureListener(calendarView, adapter, noTodoTextView);
+                // 플로팅 액션 버튼
+                fab = rootView.findViewById(R.id.daily_fab);
+                fab.setOnClickListener(new FabOnClickListener(calendarView));
                 // 스케줄 업데이트
                 new UpdateScheduleTask(calendarView, adapter, noTodoTextView).execute(sectionNumber);
                 break;
@@ -172,6 +177,21 @@ public class PlaceholderFragment extends Fragment {
                             .putExtra("date", sel.get(Calendar.DATE)),
                     CalendarActivity.MANAGE_SCHEDULE_REQ_CODE);
         }
+    }
+
+    @Override
+    public void onClickCardView(Schedule schedule) {
+        CalendarActivity activity = (CalendarActivity) getActivity();
+        if (activity == null) return;
+
+        activity.startActivityForResult(
+                new Intent(activity, ManageScheduleActivity.class)
+                        .putExtra("id", schedule.getId())
+                        .putExtra("content", schedule.getContent())
+                        .putExtra("year", schedule.getYear())
+                        .putExtra("month", schedule.getMonth())
+                        .putExtra("date", schedule.getDate()),
+                CalendarActivity.MANAGE_SCHEDULE_REQ_CODE);
     }
 
     /* THREAD */
